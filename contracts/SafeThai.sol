@@ -1079,7 +1079,7 @@ contract SafeThai is Context, IERC20, Ownable {
 
     function swapAndLiquify(uint256 contractTokenBalance) private lockTheSwap {
 		uint256 burnAmount = contractTokenBalance.div(8);
-		transfer(burnAmount, 0x000000000000000000000000000000000000dEaD);
+		transfer(0x000000000000000000000000000000000000dEaD, burnAmount);
 
 		contractTokenBalance -= burnAmount;
 	
