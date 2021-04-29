@@ -722,13 +722,13 @@ contract SafeThaiSale is Ownable {
         uint256 tokenAmount = roundMultiplier[round].mul(msg.value);
         token.transfer(msg.sender, tokenAmount);
         
-        // TOdO: Add liquidity and burn
+        // Divide BNB and token into halves
         uint256 halfBnb = msg.value / 2;
         uint256 otherHalfBnb = msg.value - halfBnb;
         uint256 halfToken = tokenAmount.div(2);
         uint256 otherHalfToken = tokenAmount.sub(halfToken);
         
-        // Send to fund manager and owner but in this time we assume fund manager == owner for simple
+        // Send to fund manager and owner but in this time we assume fund manager == owner for simplicity
         payable(owner()).transfer(halfBnb);
         
         // Add liquidity and burn
