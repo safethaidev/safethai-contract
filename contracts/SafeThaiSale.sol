@@ -708,11 +708,21 @@ contract SafeThaiSale is Ownable {
         
     }
     
-    function requestBack() public onlyOwner {
-        
+    function requestBack(
+        address to,
+        uint256 amount
+    ) public onlyOwner {
+        require(amount <= requestBackLimit, "Over limit");
+        requestBackTo = to;
+        requestBackPending = amount;
+        requestBackTimelock = block.timestamp + 60; // Just for test
     }
     
     function requestBackExecute() public onlyOwner {
         require(requestBackTimelock > 0 && requestBackTimelock <= block.timestamp);
+        
+        requestBackLimit = requestBackLimit.sub(requestBackPending);
+        token.transfer(requestBackTo, requestBackPending);
+        requestBackTimelock = 0;
     }
 }
