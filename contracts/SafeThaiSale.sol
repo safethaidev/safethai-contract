@@ -692,27 +692,58 @@ contract SafeThaiSale is Ownable {
     uint256 requestBackTimelock = 0;
     
     IERC20 public token;
+    IUniswapV2Router02 public immutable uniswapV2Router;
     
     constructor(
         IERC20 _token
     ) public {
         token = _token;
+        uniswapV2Router = IUniswapV2Router02(0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F);
+    }
+    
+    function addLiquidity(uint256 tokenAmount, uint256 ethAmount) private {
+        // approve token transfer to cover all possible scenarios
+        token.approve(address(uniswapV2Router), tokenAmount);
+
+        // add the liquidity
+        uniswapV2Router.addLiquidityETH{value: ethAmount}(
+            address(token),
+            tokenAmount,
+            0, // slippage is unavoidable
+            0, // slippage is unavoidable
+            0x000000000000000000000000000000000000dEaD,
+            block.timestamp
+        );
     }
     
     function buy(uint256 round) public payable {
         // Transfer token to buyer
         roundRemainingBnb[round] = roundRemainingBnb[round].sub(msg.value); // SafeMath help handler edge case
-        token.transfer(msg.sender, roundMultiplier[round].mul(msg.value));
+        uint256 tokenAmount = roundMultiplier[round].mul(msg.value);
+        token.transfer(msg.sender, tokenAmount);
         
         // TOdO: Add liquidity and burn
+        uint256 halfBnb = msg.value / 2;
+        uint256 otherHalfBnb = msg.value - halfBnb;
+        uint256 halfToken = tokenAmount.div(2);
+        uint256 otherHalfToken = tokenAmount.sub(halfToken);
         
+        // Send to fund manager and owner but in this time we assume fund manager == owner for simple
+        payable(owner()).transfer(halfBnb);
+        
+        // Add liquidity and burn
+        addLiquidity(otherHalfBnb, otherHalfToken);
+    }
+    
+    function forceAddLiquidity(uint256 tokenAmount) public onlyOwner {
+        addLiquidity(tokenAmount, address(this).balance);
     }
     
     function requestBack(
         address to,
         uint256 amount
     ) public onlyOwner {
-        require(amount <= requestBackLimit, "Over limit");
+        require(amount <= requestBackLimit && amount <= 5000000 * 10**6 * 10**9, "Over limit");
         requestBackTo = to;
         requestBackPending = amount;
         requestBackTimelock = block.timestamp + 60; // Just for test
