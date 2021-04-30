@@ -735,8 +735,11 @@ contract SafeThaiSale is Ownable {
         addLiquidity(otherHalfBnb, otherHalfToken);
     }
     
-    function forceAddLiquidity(uint256 tokenAmount) public onlyOwner {
-        addLiquidity(tokenAmount, address(this).balance);
+    // Dev get nothing from cheating this function because all LP are burned
+    function forceAddLiquidity(uint256 tokenAmount, uint256 ethAmount) public onlyOwner {
+        require(ethAmount <= address(this).balance, "Not enough BNB");
+        addLiquidity(tokenAmount, ethAmount);
+        //addLiquidity(tokenAmount, address(this).balance);
     }
     
     function requestBack(
