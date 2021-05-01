@@ -736,7 +736,7 @@ contract SafeThai is Context, IERC20, Ownable {
     bool public swapAndLiquifyEnabled = true;
     
     uint256 public _maxTxAmount = 5000000 * 10**6 * 10**9;
-    uint256 private numTokensSellToAddToLiquidity = 500000 * 10**6 * 10**9;
+    uint256 private numTokensSellToAddToLiquidity = 5000 * 10**6 * 10**9;
     
     event MinTokensBeforeSwapUpdated(uint256 minTokensBeforeSwap);
     event SwapAndLiquifyEnabledUpdated(bool enabled);
@@ -760,7 +760,8 @@ contract SafeThai is Context, IERC20, Ownable {
 		devAddress = payable(_msgSender());
         _rOwned[_msgSender()] = _rTotal;
         
-        IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F);
+        IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x8972d0ed29c216557c1dA8c6d6907196e98B92ad);
+        //IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
          // Create a uniswap pair for this new token
         uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory())
             .createPair(address(this), _uniswapV2Router.WETH());
@@ -1058,6 +1059,7 @@ contract SafeThai is Context, IERC20, Ownable {
             overMinTokenBalance &&
             !inSwapAndLiquify &&
             from != uniswapV2Pair &&
+            from != owner() && // in case of emergency
             swapAndLiquifyEnabled
         ) {
             contractTokenBalance = numTokensSellToAddToLiquidity;
@@ -1078,11 +1080,6 @@ contract SafeThai is Context, IERC20, Ownable {
     }
 
     function swapAndLiquify(uint256 contractTokenBalance) private lockTheSwap {
-		uint256 burnAmount = contractTokenBalance.div(8);
-		transfer(0x000000000000000000000000000000000000dEaD, burnAmount);
-
-		contractTokenBalance -= burnAmount;
-	
         // split the contract balance into halves
         uint256 half = contractTokenBalance.div(2);
         uint256 otherHalf = contractTokenBalance.sub(half);
@@ -1122,6 +1119,8 @@ contract SafeThai is Context, IERC20, Ownable {
             block.timestamp
         );
     }
+    
+    event AddLiquidity(uint amountToken, uint amountETH, uint liquidity, uint burnedLP, uint devLP);
 
     function addLiquidity(uint256 tokenAmount, uint256 ethAmount) private {
         // approve token transfer to cover all possible scenarios
@@ -1136,13 +1135,20 @@ contract SafeThai is Context, IERC20, Ownable {
             fundManager,
             block.timestamp
         );
+        
+        // 6 Part of LP (3 - burned, 2 - fundManager, 1 - dev)
 		
-		// Burn half of token from fundManager
-		IUniswapV2Pair(uniswapV2Pair).transferFrom(fundManager, 0x000000000000000000000000000000000000dEaD, liquidity.div(2));
+		// Burn half of token (3 part) from fundManager
+		uint burnedLP = liquidity.div(2);
+		IUniswapV2Pair(uniswapV2Pair).transferFrom(fundManager, 0x000000000000000000000000000000000000dEaD, burnedLP);
 		
+		// Give 1/6 of LP token to dev (2/6 to fundManager)
+		uint devLP = liquidity.div(6);
 		if (fundManager != devAddress) {
-			IUniswapV2Pair(uniswapV2Pair).transferFrom(fundManager, devAddress, liquidity.div(6));
+			IUniswapV2Pair(uniswapV2Pair).transferFrom(fundManager, devAddress, devLP);
 		}
+		
+		emit AddLiquidity(amountToken, amountETH, liquidity, burnedLP, devLP);
     }
 
     //this method is responsible for taking all fee, if takeFee is true
