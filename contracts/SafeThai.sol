@@ -715,7 +715,7 @@ contract SafeThai is Context, IERC20, Ownable {
     address[] private _excluded;
    
     uint256 private constant MAX = ~uint256(0);
-    uint256 private _tTotal = 1000000000 * 10**6 * 10**9;
+    uint256 private _tTotal = 1000000000 * 10**9;
     uint256 private _rTotal = (MAX - (MAX % _tTotal));
     uint256 private _tFeeTotal;
 
@@ -723,10 +723,10 @@ contract SafeThai is Context, IERC20, Ownable {
     string private _symbol = "SAFETHAI";
     uint8 private _decimals = 9;
     
-    uint256 public _taxFee = 5;
+    uint256 public _taxFee = 2;
     uint256 private _previousTaxFee = _taxFee;
     
-    uint256 public _liquidityFee = 5;
+    uint256 public _liquidityFee = 8;
     uint256 private _previousLiquidityFee = _liquidityFee;
 
     IUniswapV2Router02 public immutable uniswapV2Router;
@@ -735,8 +735,8 @@ contract SafeThai is Context, IERC20, Ownable {
     bool inSwapAndLiquify;
     bool public swapAndLiquifyEnabled = true;
     
-    uint256 public _maxTxAmount = 5000000 * 10**6 * 10**9;
-    uint256 private numTokensSellToAddToLiquidity = 5000 * 10**6 * 10**9;
+    uint256 public _maxTxAmount = 500000000 * 10**9;
+    uint256 private numTokensSellToAddToLiquidity = 5000 * 10**9;
     
     event MinTokensBeforeSwapUpdated(uint256 minTokensBeforeSwap);
     event SwapAndLiquifyEnabledUpdated(bool enabled);
@@ -760,7 +760,8 @@ contract SafeThai is Context, IERC20, Ownable {
 		devAddress = payable(_msgSender());
         _rOwned[_msgSender()] = _rTotal;
         
-        IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x8972d0ed29c216557c1dA8c6d6907196e98B92ad);
+        IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0xaE036c65C649172b43ef7156b009c6221B596B8b);
+        //IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x8972d0ed29c216557c1dA8c6d6907196e98B92ad);
         //IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
          // Create a uniswap pair for this new token
         uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory())
