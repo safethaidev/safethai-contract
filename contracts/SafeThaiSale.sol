@@ -771,6 +771,9 @@ contract SafeThaiSale is Ownable {
     fallback() external payable {
         emit BNBReceived(msg.sender, msg.value);
     }
+    receive() external payable {
+        emit BNBReceived(msg.sender, msg.value);
+    }
     
     event AddLiquidity(uint256 tokenAmount, uint256 ethAmount);
     function addLiquidity(uint256 tokenAmount, uint256 ethAmount) private {
