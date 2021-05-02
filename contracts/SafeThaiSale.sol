@@ -678,29 +678,102 @@ interface IUniswapV2Router02 is IUniswapV2Router01 {
     ) external;
 }
 
+/**
+ * SafeThaiSale: Preorder NFT and earn SafeThai as a reward
+ * 
+ * 
+ */
 contract SafeThaiSale is Ownable {
     using SafeMath for uint256;
     using Address for address;
     
-    uint256[5] roundRemainingBnb = [25 * 10**18, 50 * 10**18, 100 * 10**18, 200 * 10**18, 400 * 10**18];
-    uint256[5] roundMultiplier = [40000, 20000, 10000, 5000, 2500];
+    uint256[5] public roundRemainingBnb = [25 * 10**18, 50 * 10**18, 100 * 10**18, 200 * 10**18, 400 * 10**18];
+    uint256[5] public roundMultiplier = [4000, 2000, 1000, 500, 250];
     
-    // Request locked token back for airdop, limit 5000000 M per time
-    uint256 requestBackLimit = 50000000 * 10**6 * 10**9;
-    address requestBackTo;
-    uint256 requestBackPending = 0;
-    uint256 requestBackTimelock = 0;
+    // Request locked token back for airdop
+    uint256 public requestBackLimit = 50000000 * 10**9;
+    address public requestBackTo;
+    uint256 public requestBackPending = 0;
+    uint256 public requestBackTimelock = 0;
     
     IERC20 public token;
     IUniswapV2Router02 public immutable uniswapV2Router;
+    
+    // NFT Preorder system
+    uint256[15] public nftRemaining = [
+        50, 
+        150, 
+        5,
+        
+        100,
+        20,
+        4,
+        
+        200,
+        40,
+        4,
+        
+        400,
+        80,
+        4,
+        
+        10,
+        10,
+        4
+    ];
+    
+    uint256[15] public nftPrice = [
+        10**17,
+        10**17,
+        10**18,
+        
+        10**17,
+        10**18,
+        5 * 10**18,
+        
+        10**17,
+        10**18,
+        10**19,
+        
+        10**17,
+        10**18,
+        2 * 10**19,
+        
+        10**19,
+        10**19,
+        5 * 10**19
+    ];
+    
+    // All enabled
+    //bool[15] public nftEnabled = [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true];
+    mapping(address => mapping(uint256 => uint256)) public nftPreorder;
     
     constructor(
         IERC20 _token
     ) public {
         token = _token;
-        uniswapV2Router = IUniswapV2Router02(0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F);
+        
+        //uniswapV2Router = IUniswapV2Router02(0xaE036c65C649172b43ef7156b009c6221B596B8b);
+        uniswapV2Router = IUniswapV2Router02(0x8972d0ed29c216557c1dA8c6d6907196e98B92ad);
+        //uniswapV2Router = IUniswapV2Router02(0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F);
+        
+        // For test only
+        for (uint i = 0; i < 15; i++) {
+            nftPrice[i] = nftPrice[i].div(100);
+        }
+        
+        for (uint i = 0; i < 5; i++) {
+            roundRemainingBnb[i] = roundRemainingBnb[i].div(100);
+        }
     }
     
+    // Enable contract to receive BNB
+    event BNBReceived(address indexed sender, uint256 value);
+    fallback() external payable {
+        emit BNBReceived(msg.sender, msg.value);
+    }
+    
+    event AddLiquidity(uint256 tokenAmount, uint256 ethAmount);
     function addLiquidity(uint256 tokenAmount, uint256 ethAmount) private {
         // approve token transfer to cover all possible scenarios
         token.approve(address(uniswapV2Router), tokenAmount);
@@ -714,34 +787,55 @@ contract SafeThaiSale is Ownable {
             0x000000000000000000000000000000000000dEaD,
             block.timestamp
         );
+        
+        emit AddLiquidity(tokenAmount, ethAmount);
     }
     
-    function buy(uint256 round) public payable {
+    event Buy(address indexed buyer, uint256 indexed round, uint256 bnbAmount, uint256 tokenAmount);
+    function buy(uint256 round) internal {
         // Transfer token to buyer
         roundRemainingBnb[round] = roundRemainingBnb[round].sub(msg.value); // SafeMath help handler edge case
-        uint256 tokenAmount = roundMultiplier[round].mul(msg.value);
+        uint256 tokenAmount = roundMultiplier[round].mul(msg.value).div(1e6);
         token.transfer(msg.sender, tokenAmount);
         
         // Divide BNB and token into halves
         uint256 halfBnb = msg.value / 2;
         uint256 otherHalfBnb = msg.value - halfBnb;
         uint256 halfToken = tokenAmount.div(2);
-        uint256 otherHalfToken = tokenAmount.sub(halfToken);
         
         // Send to fund manager and owner but in this time we assume fund manager == owner for simplicity
-        payable(owner()).transfer(halfBnb);
+        payable(owner()).transfer(otherHalfBnb);
         
         // Add liquidity and burn
-        addLiquidity(otherHalfBnb, otherHalfToken);
+        addLiquidity(halfBnb, halfToken);
+        
+        emit Buy(msg.sender, round, msg.value, tokenAmount);
+    }
+    
+    event BuyNft(address indexed buyer, uint256 indexed tokenId, uint256 bnbAmount);
+    function buyNft(uint256 tokenId) public payable {
+        require(msg.value == nftPrice[tokenId], "Wrong price");
+        
+        buy(tokenId.div(3));
+        
+        nftRemaining[tokenId] = nftRemaining[tokenId].sub(1);
+        nftPreorder[msg.sender][tokenId] = nftPreorder[msg.sender][tokenId].add(1);
+        
+        emit BuyNft(msg.sender, tokenId, msg.value);
     }
     
     // Dev get nothing from cheating this function because all LP are burned
+    event ForceAddLiquidity(address indexed caller, uint256 tokenAmount, uint256 ethAmount);
     function forceAddLiquidity(uint256 tokenAmount, uint256 ethAmount) public onlyOwner {
         require(ethAmount <= address(this).balance, "Not enough BNB");
         addLiquidity(tokenAmount, ethAmount);
         //addLiquidity(tokenAmount, address(this).balance);
+        
+        emit ForceAddLiquidity(msg.sender, tokenAmount, ethAmount);
     }
     
+    // For airdrop or special rewards
+    event RequestBack(address indexed caller, address indexed to, uint256 amount, uint256 timelock);
     function requestBack(
         address to,
         uint256 amount
@@ -750,13 +844,21 @@ contract SafeThaiSale is Ownable {
         requestBackTo = to;
         requestBackPending = amount;
         requestBackTimelock = block.timestamp + 60; // Just for test
+        
+        emit RequestBack(msg.sender, to, amount, requestBackTimelock);
     }
     
+    event RequestBackExecute(address indexed caller, address indexed to, uint256 amount);
     function requestBackExecute() public onlyOwner {
         require(requestBackTimelock > 0 && requestBackTimelock <= block.timestamp);
         
         requestBackLimit = requestBackLimit.sub(requestBackPending);
         token.transfer(requestBackTo, requestBackPending);
+        
+        emit RequestBackExecute(msg.sender, requestBackTo, requestBackPending);
+        
         requestBackTimelock = 0;
+        requestBackPending = 0;
+        requestBackTo = address(0);
     }
 }
