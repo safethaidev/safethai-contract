@@ -760,8 +760,8 @@ contract SafeThai is Context, IERC20, Ownable {
 		devAddress = payable(_msgSender());
         _rOwned[_msgSender()] = _rTotal;
         
-        IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0xaE036c65C649172b43ef7156b009c6221B596B8b);
-        //IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x8972d0ed29c216557c1dA8c6d6907196e98B92ad);
+        //IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0xaE036c65C649172b43ef7156b009c6221B596B8b);
+        IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x8972d0ed29c216557c1dA8c6d6907196e98B92ad);
         //IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
          // Create a uniswap pair for this new token
         uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory())
