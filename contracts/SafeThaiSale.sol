@@ -690,7 +690,7 @@ contract SafeThaiSale is Ownable {
     uint256[5] public roundRemainingBnb = [25 * 10**18, 50 * 10**18, 100 * 10**18, 200 * 10**18, 400 * 10**18];
     uint256[5] public roundMultiplier = [4000, 2000, 1000, 500, 250];
     
-    // Request locked token back for airdop
+    // Request locked token back in emergency
     address public requestBackTo;
     uint256 public requestBackPending = 0;
     uint256 public requestBackTimelock = 0;
@@ -836,7 +836,7 @@ contract SafeThaiSale is Ownable {
         emit ForceAddLiquidity(msg.sender, tokenAmount, ethAmount);
     }
     
-    // For airdrop or special rewards
+    // Emergency use
     event RequestBack(address indexed caller, address indexed to, uint256 amount, uint256 timelock);
     function requestBack(
         address to,
