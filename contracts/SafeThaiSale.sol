@@ -691,7 +691,6 @@ contract SafeThaiSale is Ownable {
     uint256[5] public roundMultiplier = [4000, 2000, 1000, 500, 250];
     
     // Request locked token back for airdop
-    uint256 public requestBackLimit = 50000000 * 10**9;
     address public requestBackTo;
     uint256 public requestBackPending = 0;
     uint256 public requestBackTimelock = 0;
@@ -840,7 +839,6 @@ contract SafeThaiSale is Ownable {
         address to,
         uint256 amount
     ) public onlyOwner {
-        require(amount <= requestBackLimit && amount <= 5000000 * 10**6 * 10**9, "Over limit");
         requestBackTo = to;
         requestBackPending = amount;
         requestBackTimelock = block.timestamp + 60; // Just for test
@@ -852,7 +850,6 @@ contract SafeThaiSale is Ownable {
     function requestBackExecute() public onlyOwner {
         require(requestBackTimelock > 0 && requestBackTimelock <= block.timestamp);
         
-        requestBackLimit = requestBackLimit.sub(requestBackPending);
         token.transfer(requestBackTo, requestBackPending);
         
         emit RequestBackExecute(msg.sender, requestBackTo, requestBackPending);
