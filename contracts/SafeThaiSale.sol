@@ -743,8 +743,6 @@ contract SafeThaiSale is Ownable {
         5 * 10**19
     ];
     
-    // All enabled
-    //bool[15] public nftEnabled = [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true];
     mapping(address => mapping(uint256 => uint256)) public nftPreorder;
     
     constructor(
@@ -763,6 +761,7 @@ contract SafeThaiSale is Ownable {
         
         for (uint i = 0; i < 5; i++) {
             roundRemainingBnb[i] = roundRemainingBnb[i].div(100);
+            roundMultiplier[i] = roundMultiplier[i].mul(100);
         }
     }
     
@@ -816,6 +815,7 @@ contract SafeThaiSale is Ownable {
     
     event BuyNft(address indexed buyer, uint256 indexed tokenId, uint256 bnbAmount);
     function buyNft(uint256 tokenId) public payable {
+        require(tokenId < 3 || nftRemaining[tokenId - 3] == 0, "Not open");
         require(msg.value == nftPrice[tokenId], "Wrong price");
         
         buy(tokenId.div(3));
