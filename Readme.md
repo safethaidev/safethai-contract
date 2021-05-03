@@ -18,7 +18,7 @@
 15. Deploy SafeThaiRound0
 16. Exclude fee for SafeThaiRound0
 17. Exclude from reward for SafeThaiRound0
-18. Transfer amount for round 0 +10,000,000 SafeThai to SafeThaiRound0
+18. Transfer amount for round 0 +11,000,000 SafeThai to SafeThaiRound0
 19. Transfer remaining SafeThai to SafeThaiSale
 
 ## Mainnet
