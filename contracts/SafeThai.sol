@@ -1065,6 +1065,7 @@ contract SafeThai is Context, IERC20, Ownable {
         if (
             overMinTokenBalance &&
             !inSwapAndLiquify &&
+            from != address(uniswapV2Router) &&
             from != uniswapV2Pair &&
             from != owner() && // in case of emergency
             swapAndLiquifyEnabled
