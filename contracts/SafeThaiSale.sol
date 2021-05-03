@@ -809,7 +809,7 @@ contract SafeThaiSale is Ownable {
         payable(owner()).transfer(otherHalfBnb);
         
         // Add liquidity and burn
-        addLiquidity(halfBnb, halfToken);
+        addLiquidity(halfToken, halfBnb);
         
         emit Buy(msg.sender, round, msg.value, tokenAmount);
     }
