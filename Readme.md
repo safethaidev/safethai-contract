@@ -27,8 +27,11 @@
 
 ## Testnet
 
-### Address
-0x6A4f4524188E7b8916094437a89A623c8914B8B5
+### SafeThai
+0xC74F9c29Bb9173bAFFd946930e8570D0E0647da5
 
-### Example swapping transactions
-https://testnet.bscscan.com/tx/0x23ab1514a6d50bb5acce8bd5a604a605368af2a06890032b31595b0fe58bfd89
+### SafeThai CAKE-LP
+0xa4ed2F7416dBc49579021c451aC1bB821DBCC991
+
+### SafeThaiSale
+0x19dB150B8E9E6A2076E1997F915868908B77F1B2
