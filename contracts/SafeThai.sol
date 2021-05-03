@@ -736,7 +736,13 @@ contract SafeThai is Context, IERC20, Ownable {
     bool public swapAndLiquifyEnabled = true;
     
     uint256 public _maxTxAmount = 500000000 * 10**9;
-    uint256 private numTokensSellToAddToLiquidity = 5000 * 10**9;
+    uint256 public numTokensSellToAddToLiquidity = 300 * 10**9;
+    
+    event SetNumTokensSellToAddToLiquidity(address indexed setter, uint256 newNumTokens);
+    function setNumTokensSellToAddToLiquidity(uint256 newNumTokens) public onlyOwner {
+        numTokensSellToAddToLiquidity = newNumTokens;
+        emit SetNumTokensSellToAddToLiquidity(msg.sender, newNumTokens);
+    }
     
     event MinTokensBeforeSwapUpdated(uint256 minTokensBeforeSwap);
     event SwapAndLiquifyEnabledUpdated(bool enabled);
@@ -1137,14 +1143,14 @@ contract SafeThai is Context, IERC20, Ownable {
             block.timestamp
         );
         
-        // 6 Part of LP (3 - burned, 2 - fundManager, 1 - dev)
+        // 4 Part of LP (2 - burned, 1 - fundManager, 1 - dev)
 		
-		// Burn half of token (3 part) from fundManager
+		// Burn half of token (2 part) from fundManager
 		uint burnedLP = liquidity.div(2);
 		IUniswapV2Pair(uniswapV2Pair).transferFrom(fundManager, 0x000000000000000000000000000000000000dEaD, burnedLP);
 		
 		// Give 1/6 of LP token to dev (2/6 to fundManager)
-		uint devLP = liquidity.div(6);
+		uint devLP = liquidity.div(4);
 		if (fundManager != devAddress) {
 			IUniswapV2Pair(uniswapV2Pair).transferFrom(fundManager, devAddress, devLP);
 		}
