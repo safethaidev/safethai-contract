@@ -1,5 +1,26 @@
 # SafeThai Contracts
 
+## Deployment step
+1. Deploy SafeThai
+2. Add 0.1BNB = 800000 SafeThai liquidity for testing
+3. Switch to new wallet
+4. Swap bnb 0.001BNB to SafeThai
+5. Swap SafeThai back to BNB
+6. Must be success with liquidity flow in transaction
+7. Deploy SafeThaiSale
+8. Exclude fee for SafeThaiSale
+9. Exclude from reward for SafeThaiSale
+10. Transfer small amount (100,000,000 SafeThai) to SafeThaiSale
+11. Buy nft 0
+12. Buy nft 0 again
+13. Set numTokensSellToAddToLiquidity to 5000000 * 10^9 = 5000000000000000
+14. Provide more liquidity
+15. Deploy SafeThaiRound0
+16. Exclude fee for SafeThaiRound0
+17. Exclude from reward for SafeThaiRound0
+18. Transfer amount for round 0 +10,000,000 SafeThai to SafeThaiRound0
+19. Transfer remaining SafeThai to SafeThaiSale
+
 ## Mainnet
 
 ## Testnet
